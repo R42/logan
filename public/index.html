@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LogAn</title>
+  <style>
+textarea {
+  width: 100%;
+  height: 30em;
+}
+
+#example {
+  margin-left: -20px;
+}
+
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.area {
+  fill: #969696;
+}
+
+.attention {
+  background: yellow;
+  margin: -4px;
+  padding: 4px;
+}
+
+  </style>
+</head>
+<body>
+  <p id="lcd_mosi"></p>
+  <p id="lcd_cs"></p>
+  <p id="lcd_sck"></p>
+  <p id="lcd_reset"></p>
+  <p id="lcd_button"></p>
+  <form id="data" onsubmit="javascript:return false;">
+    <textarea id="tsv" name="tsv">
+1141.863478	1141.864847	8020000	8800000	⎸ \ / ⎸ ⎹
+1141.864847	1141.870284	8800000	8400000	⎸ / ⎸ \ ⎹
+1141.870284	1141.871286	8400000	8800000	⎸ \ ⎸ / ⎹
+1141.871286	1141.872277	8800000	8000000	⎸ / ⎸ ⎸ ⎹
+1141.873347	1141.873472	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.873472	1141.873854	8400000	8800000	⎸ \ ⎸ / ⎹
+1141.873854	1141.874538	8800000	8c00000	⎸ ⎹ ⎸ \ ⎹
+1141.874538	1141.874894	8c00000	8400000	⎸ / ⎸ ⎹ ⎹
+1141.874894	1141.875920	8400000	8c00000	⎸ \ ⎸ ⎹ ⎹
+1141.875920	1141.876259	8c00000	8000000	⎸ / ⎸ / ⎹
+1141.877307	1141.877449	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.877449	1141.877826	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.878140	1141.878847	8000000	8c00000	⎸ \ ⎸ \ ⎹
+1141.878847	1141.879355	8c00000	8400000	⎸ / ⎸ ⎹ ⎹
+1141.880456	1141.880567	8400000	8800000	⎸ \ ⎸ / ⎹
+1141.880567	1141.880939	8800000	8400000	⎸ / ⎸ \ ⎹
+1141.880939	1141.881422	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.881422	1141.881774	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.881774	1141.882672	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.882672	1141.883011	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.883011	1141.884116	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.884116	1141.884529	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.884529	1141.885240	8400000	8c00000	⎸ \ ⎸ ⎹ ⎹
+1141.885240	1141.886162	8c00000	8000000	⎸ / ⎸ / ⎹
+1141.887279	1141.887362	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.887362	1141.888419	8400000	8c00000	⎸ \ ⎸ ⎹ ⎹
+1141.888419	1141.889634	8c00000	8000000	⎸ / ⎸ / ⎹
+1141.889977	1141.890434	8000000	8800000	⎸ \ ⎸ ⎸ ⎹
+1141.890434	1141.891033	8800000	8000000	⎸ / ⎸ ⎸ ⎹
+1141.892596	1141.892697	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.892697	1141.893288	8400000	8c00000	⎸ \ ⎸ ⎹ ⎹
+1141.893288	1141.893933	8c00000	8800000	⎸ ⎹ ⎸ / ⎹
+1141.893933	1141.894248	8800000	8000000	⎸ / ⎸ ⎸ ⎹
+1141.895240	1141.895680	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.895680	1141.896309	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.897846	1141.897959	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.897959	1141.898658	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.899162	1141.899745	8000000	8c00000	⎸ \ ⎸ \ ⎹
+1141.900117	1141.900818	8c00000	8000000	⎸ / ⎸ / ⎹
+1141.902059	1141.902151	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.902151	1141.902507	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.903163	1141.903750	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.903750	1141.904133	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.905281	1141.905392	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.905392	1141.905776	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.906799	1141.906976	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.906976	1141.907352	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.907352	1141.907667	8000000	8800000	⎸ \ ⎸ ⎸ ⎹
+1141.907667	1141.908331	8800000	8c00000	⎸ ⎹ ⎸ \ ⎹
+1141.908331	1141.909314	8c00000	8000000	⎸ / ⎸ / ⎹
+1141.909314	1141.909651	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.911276	1141.911389	8400000	8000000	⎸ ⎸ ⎸ / ⎹
+1141.911389	1141.911813	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
+1141.911813	1141.913530	8400000	8020000	⎸ ⎸ \ / ⎹
+    </textarea>
+    <button onclick="update();return false;">Update</update>
+  </form>
+  <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
+  <script src="time-series-chart.js"></script>
+  <script>
+
+(function () {
+  var init = false;
+  var data = [[], [], [], [], []];
+  var chart = new Array(5);
+
+  var LCD_CS     = 17;
+  var LCD_SCK    = 22;
+  var LCD_MOSI   = 23;
+  var LCD_BUTTON = 24;
+  var LCD_RESET  = 27;
+
+  function parseTime(str) {
+    var secs = parseInt(str, 10);
+    var micros = parseInt(str.substr(str.indexOf('.') + 1), 10);
+    return new Date(secs * 1000 + Math.round(micros / 1000));
+  }
+
+  function addSample(collection, time, pinout, bit) {
+    collection.push([time, pinout & (1 << bit) ? 1 : 0]);
+  }
+
+  window.update = function () {
+    var tsv = document.getElementById('tsv').value;
+    data[0].length = 0;
+    data[1].length = 0;
+    data[2].length = 0;
+    data[3].length = 0;
+    data[4].length = 0;
+    tsv.split('\n').forEach(function (line) {
+      var columns = line.split('\t');
+      if (columns.length < 4) { return; }
+
+      var previousTime = parseTime(columns[0]);
+      var currentTime  = parseTime(columns[1]);
+      var previousPinout = parseInt(columns[2], 16);
+      var currentPinout  = parseInt(columns[3], 16);
+
+      addSample(data[0], previousTime, previousPinout, LCD_MOSI  );
+      addSample(data[1], previousTime, previousPinout, LCD_CS    );
+      addSample(data[2], previousTime, previousPinout, LCD_SCK   );
+      addSample(data[3], previousTime, previousPinout, LCD_RESET );
+      addSample(data[4], previousTime, previousPinout, LCD_BUTTON);
+      addSample(data[0], currentTime, currentPinout, LCD_MOSI  );
+      addSample(data[1], currentTime, currentPinout, LCD_CS    );
+      addSample(data[2], currentTime, currentPinout, LCD_SCK   );
+      addSample(data[3], currentTime, currentPinout, LCD_RESET );
+      addSample(data[4], currentTime, currentPinout, LCD_BUTTON);
+    });
+
+    var formatDate = d3.time.format("%b %Y");
+
+    ['mosi', 'cs', 'sck', 'reset', 'button'].forEach(function(c, i) {
+      d3.select('#lcd_' + c)
+          .datum(data[i])
+        .call(chart[i] = timeSeriesChart()
+          .x(function(d) { return d[0]; })
+          .y(function(d) { return d[1]; }));
+    });
+  };
+})();
+
+  </script>
+</body>
+</html>
