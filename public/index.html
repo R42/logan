@@ -113,8 +113,8 @@ textarea {
 
   function parseTime(str) {
     var secs = parseInt(str, 10);
-    var micros = parseInt(str.substr(str.indexOf('.') + 1), 10);
-    return new Date(secs * 1000 + Math.round(micros / 1000));
+    var nanos = parseInt(str.substr(str.indexOf('.') + 1), 10);
+    return new Date(secs * 1000 + Math.round(nanos / 1000000));
   }
 
   function addSample(collection, time, pinout, bit) {

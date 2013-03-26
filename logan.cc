@@ -77,13 +77,13 @@ void SetupIO() {
   gpio = (volatile uint32_t *) gpio_map;
 }
 
-void RawDumpSample(struct timeval &tPrevious, struct timeval &tNow, uint32_t previousSample, uint32_t sample) {
+void RawDumpSample(struct timespec &tPrevious, struct timespec &tNow, uint32_t previousSample, uint32_t sample) {
   const char tab = '\t';
 
   cout << dec << setfill('0') << setw(0) <<
-          tPrevious.tv_sec << '.' << right << setw(6) << tPrevious.tv_usec <<
+          tPrevious.tv_sec << '.' << right << setw(9) << tPrevious.tv_nsec <<
           tab << setw(0) <<
-          tNow.tv_sec << '.' << right << setw(6) << tNow.tv_usec <<
+          tNow.tv_sec << '.' << right << setw(9) << tNow.tv_nsec <<
           tab <<
           hex << setw(8) << sample << endl;
 }
@@ -109,18 +109,18 @@ void writeBit(uint32_t previous, uint32_t current, uint32_t bit) {
   cout << "\x1b[m ";
 }
 
-void DumpSample(struct timeval &tPrevious,
-                struct timeval &tNow,
+void DumpSample(struct timespec &tPrevious,
+                struct timespec &tNow,
                 uint32_t previousSample,
                 uint32_t sample) {
   const char tab = '\t';
 
   cout << dec << setfill(' ') << setw(4) <<
           (tPrevious.tv_sec - baseTime) << '.' <<
-          setfill('0') << right << setw(6) << tPrevious.tv_usec <<
+          setfill('0') << right << setw(9) << tPrevious.tv_nsec <<
           tab << setfill(' ') << setw(4) <<
           (tNow.tv_sec - baseTime) << '.' <<
-          setfill('0') << right << setw(6) << tNow.tv_usec <<
+          setfill('0') << right << setw(9) << tNow.tv_nsec <<
           tab <<
           hex << previousSample << tab << sample << tab;
 
@@ -144,27 +144,22 @@ int main(int argc, char ** argv) {
          1 << LCD_BUTTON | // 01000000 | GPIO 24 => P1-18 | <= (button)
          1 << LCD_RESET ;  // 08000000 | GPIO 27 => P1-13 | <= R̅E̅S̅E̅T̅
 
-  struct timeval tNow, tPrevious;
-  struct timespec sleeper ;
+  struct timespec tNow, tPrevious;
 
   uint32_t pinout = gpio[13] & mask, previous = pinout;
-  gettimeofday(&tNow, NULL);
+  clock_gettime(CLOCK_REALTIME, &tNow);
   baseTime = tNow.tv_sec;
   tPrevious = tNow;
   DumpSample(tPrevious, tNow, previous, pinout);
-  for (int i = 0; ; ) {
+  for (;;) {
     tPrevious = tNow;
-    gettimeofday(&tNow, NULL);
+
+    clock_gettime(CLOCK_REALTIME, &tNow);
 
     pinout = gpio[13] & mask;
-    if (pinout == previous) {
-      sleeper.tv_sec  = 0;
-      sleeper.tv_nsec = 500L;
-      nanosleep (&sleeper, NULL);
-      continue;
+    if (pinout != previous) {
+      DumpSample(tPrevious, tNow, previous, pinout);
+      previous = pinout;
     }
-    DumpSample(tPrevious, tNow, previous, pinout);
-    previous = pinout;
-    i++;
   }
 }

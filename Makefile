@@ -1,4 +1,5 @@
 CPPFLAGS = -g -Wall
+LDFLAGS = -lrt
 
 .PHONY: clean
 
