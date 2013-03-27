@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <stdint.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
@@ -20,7 +22,18 @@ volatile unsigned *gpio;
 
 // pin mask
 uint32_t mask;
-time_t baseTime;
+
+#define BUFFER_SIZE 1024 * 1024
+
+struct Sample {
+  uint64_t tPrevious;
+  uint64_t tNow;
+  uint32_t sample;
+};
+
+Sample buffer[BUFFER_SIZE];
+Sample *next, *guard;
+unsigned int bufferPos = 0;
 
 #define BCM2708_PERI_BASE 0x20000000
 #define GPIO_BASE         (BCM2708_PERI_BASE + 0x200000) // GPIO controller
@@ -88,53 +101,75 @@ void RawDumpSample(struct timespec &tPrevious, struct timespec &tNow, uint32_t p
           hex << setw(8) << sample << endl;
 }
 
-void writeBit(uint32_t previous, uint32_t current, uint32_t bit) {
+void WriteBit(uint32_t previous, uint32_t current, uint32_t bit) {
+  const char *signal;
   previous &= bit;
   current &= bit;
 
-  cout << "\x1b[44m";
   if (previous) {
     if (current) {
-      cout << "⎹";
+      signal = "⎹";
     } else {
-      cout << "/";
+      signal = "/";
     }
   } else {
     if (current) {
-      cout << "\\";
+      signal = "\\";
     } else {
-      cout << "⎸";
+      signal = "⎸";
     }
   }
-  cout << "\x1b[m ";
+  printf(" \x1b[44m%s\x1b[m", signal);
 }
 
-void DumpSample(struct timespec &tPrevious,
-                struct timespec &tNow,
+void DumpSample(uint64_t tPrevious,
+                uint64_t tNow,
                 uint32_t previousSample,
                 uint32_t sample) {
-  const char tab = '\t';
+  printf("%9lld\t%9lld\t%08x\t%08x",
+         tPrevious,
+         tNow,
+         previousSample,
+         sample);
 
-  cout << dec << setfill(' ') << setw(4) <<
-          (tPrevious.tv_sec - baseTime) << '.' <<
-          setfill('0') << right << setw(9) << tPrevious.tv_nsec <<
-          tab << setfill(' ') << setw(4) <<
-          (tNow.tv_sec - baseTime) << '.' <<
-          setfill('0') << right << setw(9) << tNow.tv_nsec <<
-          tab <<
-          hex << previousSample << tab << sample << tab;
+  WriteBit(previousSample, sample, 1 << LCD_BUTTON);
+  WriteBit(previousSample, sample, 1 << LCD_MOSI);
+  WriteBit(previousSample, sample, 1 << LCD_CS);
+  WriteBit(previousSample, sample, 1 << LCD_SCK);
+  WriteBit(previousSample, sample, 1 << LCD_RESET);
 
-  writeBit(previousSample, sample, 1 << LCD_BUTTON);
-  writeBit(previousSample, sample, 1 << LCD_MOSI);
-  writeBit(previousSample, sample, 1 << LCD_CS);
-  writeBit(previousSample, sample, 1 << LCD_SCK);
-  writeBit(previousSample, sample, 1 << LCD_RESET);
+  printf("\n");
+}
 
-  cout << endl;
+void DumpSamples() {
+  Sample *current = buffer;
+  uint32_t previousSample = current->sample;
+  for (; current != next; current++) {
+    DumpSample(current->tPrevious,
+               current->tNow,
+               previousSample,
+               current->sample);
+    previousSample = current->sample;
+  }
+
+  buffer[0] = next[-1];
+  next = &buffer[1];
+}
+
+static void SigUsr1Handler(int signal) {
+  DumpSamples();
 }
 
 int main(int argc, char ** argv) {
   SetupIO();
+
+  next = buffer;
+  guard = &buffer[BUFFER_SIZE];
+  if (signal(SIGUSR1, SigUsr1Handler) == SIG_ERR) {
+    cerr << "An error occurred while setting a signal handler." << endl;
+    return EXIT_FAILURE;
+  }
+
   // TODO get this mask from an argument
   // TODO map P1 pin number to GPIO pin
   // TODO support Rev. 1 P1 pin numbers
@@ -144,22 +179,28 @@ int main(int argc, char ** argv) {
          1 << LCD_BUTTON | // 01000000 | GPIO 24 => P1-18 | <= (button)
          1 << LCD_RESET ;  // 08000000 | GPIO 27 => P1-13 | <= R̅E̅S̅E̅T̅
 
-  struct timespec tNow, tPrevious;
-
   uint32_t pinout = gpio[13] & mask, previous = pinout;
-  clock_gettime(CLOCK_REALTIME, &tNow);
-  baseTime = tNow.tv_sec;
-  tPrevious = tNow;
-  DumpSample(tPrevious, tNow, previous, pinout);
+  uint64_t tick = 0;
+  next->tNow = tick++;
+  next->tPrevious = next->tNow;
+  next->sample = pinout;
+  next[1].tNow = next->tNow;
+  next++;
   for (;;) {
-    tPrevious = tNow;
+    next->tPrevious = next->tNow;
+    next->tNow = tick++;
+    // if (tick % 1000 == 0) {
+    //   printf(".");fflush(stdout);
+    // }
 
-    clock_gettime(CLOCK_REALTIME, &tNow);
+    next->sample = gpio[13] & mask;
+    if (next->sample != previous) {
+      // printf("+");fflush(stdout);
 
-    pinout = gpio[13] & mask;
-    if (pinout != previous) {
-      DumpSample(tPrevious, tNow, previous, pinout);
-      previous = pinout;
+      previous = next->sample;
+      Sample *prev = next;
+      if (++next == guard) next = buffer;
+      next->tNow = prev->tNow;
     }
   }
 }

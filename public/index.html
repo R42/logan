@@ -94,7 +94,7 @@ textarea {
 1141.911389	1141.911813	8000000	8400000	⎸ ⎸ ⎸ \ ⎹
 1141.911813	1141.913530	8400000	8020000	⎸ ⎸ \ / ⎹
     </textarea>
-    <button onclick="update();return false;">Update</update>
+    <button onclick="update();return false;">Update</button>
   </form>
   <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
   <script src="time-series-chart.js"></script>
@@ -112,9 +112,8 @@ textarea {
   var LCD_RESET  = 27;
 
   function parseTime(str) {
-    var secs = parseInt(str, 10);
-    var nanos = parseInt(str.substr(str.indexOf('.') + 1), 10);
-    return new Date(secs * 1000 + Math.round(nanos / 1000000));
+    var ticks = parseInt(str, 10);
+    return ticks;
   }
 
   function addSample(collection, time, pinout, bit) {
