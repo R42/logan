@@ -136,7 +136,7 @@ void DumpSamples() {
 
   Sample *current;;
   for (current = buffer; current != next; current++) {
-    printf("%9lld\t%08x\n", current->time - baseTime, current->sample);
+    fprintf(stderr, "%9lld\t%08x\n", current->time - baseTime, current->sample);
   }
 
   buffer[0] = next[-1];
@@ -166,6 +166,8 @@ int main(int argc, char ** argv) {
     cerr << "An error occurred while setting the USR2 signal handler." << endl;
     return EXIT_FAILURE;
   }
+
+  fprintf(stderr, "# Ready to go.\n");
 
   // TODO get this mask from an argument
   // TODO map P1 pin number to GPIO pin
