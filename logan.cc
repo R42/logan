@@ -22,6 +22,8 @@ volatile unsigned *gpio;
 
 // pin mask
 uint32_t mask;
+// pointer to previous sample
+uint32_t *pprevious;
 
 #define BUFFER_SIZE 1024 * 1024
 
@@ -29,8 +31,7 @@ uint32_t mask;
 volatile uint64_t tick = 0;
 
 struct Sample {
-  uint64_t tPrevious;
-  uint64_t tNow;
+  uint64_t time;
   uint32_t sample;
 };
 
@@ -125,34 +126,17 @@ void WriteBit(uint32_t previous, uint32_t current, uint32_t bit) {
   printf(" \x1b[44m%s\x1b[m", signal);
 }
 
-void DumpSample(uint64_t tPrevious,
-                uint64_t tNow,
+void DumpSample(uint64_t time,
                 uint32_t previousSample,
                 uint32_t sample) {
-  printf("%9lld\t%9lld\t%08x\t%08x",
-         tPrevious,
-         tNow,
-         previousSample,
-         sample);
-
-  // WriteBit(previousSample, sample, 1 << LCD_BUTTON);
-  // WriteBit(previousSample, sample, 1 << LCD_MOSI  );
-  // WriteBit(previousSample, sample, 1 << LCD_CS    );
-  // WriteBit(previousSample, sample, 1 << LCD_SCK   );
-  // WriteBit(previousSample, sample, 1 << LCD_RESET );
-
-  printf("\n");
 }
 
 void DumpSamples() {
-  Sample *current = buffer;
-  uint32_t previousSample = current->sample;
-  for (; current != next; current++) {
-    DumpSample(current->tPrevious,
-               current->tNow,
-               previousSample,
-               current->sample);
-    previousSample = current->sample;
+  uint64_t baseTime = buffer[0].time;
+
+  Sample *current;;
+  for (current = buffer; current != next; current++) {
+    printf("%9lld\t%08x\n", current->time - baseTime, current->sample);
   }
 
   buffer[0] = next[-1];
@@ -165,12 +149,12 @@ static void SigUsr1Handler(int signal) {
 
 static void SigUsr2Handler(int signal) {
   tick = 0;
+  next = buffer;
 }
 
 int main(int argc, char ** argv) {
   SetupIO();
 
-  next = buffer;
   guard = &buffer[BUFFER_SIZE];
 
   if (signal(SIGUSR1, SigUsr1Handler) == SIG_ERR) {
@@ -192,24 +176,23 @@ int main(int argc, char ** argv) {
          1 << LCD_BUTTON | // 01000000 | GPIO 24 => P1-18 | <= (button)
          1 << LCD_RESET ;  // 08000000 | GPIO 27 => P1-13 | <= R̅E̅S̅E̅T̅
 
-  uint32_t pinout = *gpio & mask, previous = pinout, sample;
-  next->tPrevious = next->tNow = tick++;
-  next[1].tNow = next->tNow;
-  next->sample = pinout;
-  next++;
-  for (;;) {
-    next->tPrevious = next->tNow;
-    next->tNow      = tick++;
+  uint32_t pinout   = *gpio & mask;
+  uint32_t previous = pinout;
+  pprevious = &previous;
 
+  uint32_t sample;
+
+  next = buffer;
+  for (;;) {
     sample = *gpio & mask;
+
     if (sample != previous) {
+      next->time = tick;
       next->sample = previous = sample;
-      if (++next == guard) {
-        next = buffer;
-        next->tNow = guard[-1].tNow;
-      } else {
-        next->tNow = next[-1].tNow;
-      }
+
+      if (++next == guard) { next = buffer; }
     }
+
+    tick++;
   }
 }
