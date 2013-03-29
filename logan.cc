@@ -45,15 +45,6 @@ unsigned int bufferPos = 0;
 #define PAGE_SIZE (4*1024)
 #define BLOCK_SIZE (4*1024)
 
-// GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x) or SET_GPIO_ALT(x,y)
-#define INP_GPIO(g) *(gpio +((g) / 10)) &= ~(7 << (((g) % 10) * 3))
-#define OUT_GPIO(g) *(gpio +((g) / 10)) |=  (1 << (((g) % 10) * 3))
-#define SET_GPIO_ALT(g,a) *(gpio + (((g) / 10))) |=\
-                          (((a) <= 3 ? (a) + 4 : (a) == 4 ? 3 : 2) << (((g) % 10) * 3))
-
-#define GPIO_SET *(gpio+7)  // sets   bits which are 1 ignores bits which are 0
-#define GPIO_CLR *(gpio+10) // clears bits which are 1 ignores bits which are 0
-
 #define LCD_CS     17
 #define LCD_SCK    22
 #define LCD_MOSI   23
@@ -92,43 +83,6 @@ void SetupIO() {
 
   // Always use volatile pointer!
   gpio = (volatile uint32_t *) &gpio_map[13];
-}
-
-void RawDumpSample(struct timespec &tPrevious, struct timespec &tNow, uint32_t previousSample, uint32_t sample) {
-  const char tab = '\t';
-
-  cout << dec << setfill('0') << setw(0) <<
-          tPrevious.tv_sec << '.' << right << setw(9) << tPrevious.tv_nsec <<
-          tab << setw(0) <<
-          tNow.tv_sec << '.' << right << setw(9) << tNow.tv_nsec <<
-          tab <<
-          hex << setw(8) << sample << endl;
-}
-
-void WriteBit(uint32_t previous, uint32_t current, uint32_t bit) {
-  const char *signal;
-  previous &= bit;
-  current &= bit;
-
-  if (previous) {
-    if (current) {
-      signal = "⎹";
-    } else {
-      signal = "/";
-    }
-  } else {
-    if (current) {
-      signal = "\\";
-    } else {
-      signal = "⎸";
-    }
-  }
-  printf(" \x1b[44m%s\x1b[m", signal);
-}
-
-void DumpSample(uint64_t time,
-                uint32_t previousSample,
-                uint32_t sample) {
 }
 
 void DumpSamples() {
@@ -196,8 +150,9 @@ int main(int argc, char ** argv) {
     if (sample != previous) {
       next->time = tick;
       next->sample = previous = sample;
+      next++;
 
-      if (++next == guard) { next = buffer; }
+      if (next == guard) { next = buffer; }
     }
 
     tick++;
