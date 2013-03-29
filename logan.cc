@@ -134,10 +134,14 @@ void DumpSample(uint64_t time,
 void DumpSamples() {
   uint64_t baseTime = buffer[0].time;
 
-  Sample *current;;
+  fprintf(stderr, "# Samples\t%d\n", next - buffer);
+
+  Sample *current;
   for (current = buffer; current != next; current++) {
     fprintf(stderr, "%9lld\t%08x\n", current->time - baseTime, current->sample);
   }
+
+  fprintf(stderr, "# EOB\n");
 
   buffer[0] = next[-1];
   next = &buffer[1];
@@ -150,6 +154,7 @@ static void SigUsr1Handler(int signal) {
 static void SigUsr2Handler(int signal) {
   tick = 0;
   next = buffer;
+  *pprevious = ~0;
 }
 
 int main(int argc, char ** argv) {

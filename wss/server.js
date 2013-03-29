@@ -1,15 +1,24 @@
+/*jshint node:true*/
+'use strict';
+
+console.log('Requiring stuff...');
+
 var path = require('path');
+var http = require('http');
+var url = require('url');
+var nodeStatic = require('node-static');
+var WebSocketServer = require('ws').Server;
+
+console.log('Starting up...');
 
 var stream = process.stdin;
 stream.setEncoding('utf8');
 stream.resume();
 
-var http = require('http');
-var url = require('url');
 var server = http.createServer(handler);
 
 var staticDirectory = path.resolve(__dirname, '..', 'public');
-var staticServer = new (require('node-static').Server)(staticDirectory);
+var staticServer = new (nodeStatic.Server)(staticDirectory);
 function handler(req, res) {
   var pathname = url.parse(req.url).pathname;
   console.log('Serving %s with %s',
@@ -22,7 +31,6 @@ function handler(req, res) {
   }
 }
 
-var WebSocketServer = require('ws').Server
 var wss = new WebSocketServer({ server: server });
 wss.on('connection', session);
 
