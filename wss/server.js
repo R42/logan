@@ -8,7 +8,7 @@ var http = require('http');
 var url = require('url');
 var server = http.createServer(handler);
 
-var staticDirectory = path.resolve('..', 'public');
+var staticDirectory = path.resolve(__dirname, '..', 'public');
 var staticServer = new (require('node-static').Server)(staticDirectory);
 function handler(req, res) {
   var pathname = url.parse(req.url).pathname;
