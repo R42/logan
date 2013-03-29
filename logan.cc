@@ -25,6 +25,9 @@ uint32_t mask;
 
 #define BUFFER_SIZE 1024 * 1024
 
+// tick counter
+volatile uint64_t tick = 0;
+
 struct Sample {
   uint64_t tPrevious;
   uint64_t tNow;
@@ -87,7 +90,7 @@ void SetupIO() {
   }
 
   // Always use volatile pointer!
-  gpio = (volatile uint32_t *) gpio_map;
+  gpio = (volatile uint32_t *) &gpio_map[13];
 }
 
 void RawDumpSample(struct timespec &tPrevious, struct timespec &tNow, uint32_t previousSample, uint32_t sample) {
@@ -132,11 +135,11 @@ void DumpSample(uint64_t tPrevious,
          previousSample,
          sample);
 
-  WriteBit(previousSample, sample, 1 << LCD_BUTTON);
-  WriteBit(previousSample, sample, 1 << LCD_MOSI);
-  WriteBit(previousSample, sample, 1 << LCD_CS);
-  WriteBit(previousSample, sample, 1 << LCD_SCK);
-  WriteBit(previousSample, sample, 1 << LCD_RESET);
+  // WriteBit(previousSample, sample, 1 << LCD_BUTTON);
+  // WriteBit(previousSample, sample, 1 << LCD_MOSI  );
+  // WriteBit(previousSample, sample, 1 << LCD_CS    );
+  // WriteBit(previousSample, sample, 1 << LCD_SCK   );
+  // WriteBit(previousSample, sample, 1 << LCD_RESET );
 
   printf("\n");
 }
@@ -160,13 +163,23 @@ static void SigUsr1Handler(int signal) {
   DumpSamples();
 }
 
+static void SigUsr2Handler(int signal) {
+  tick = 0;
+}
+
 int main(int argc, char ** argv) {
   SetupIO();
 
   next = buffer;
   guard = &buffer[BUFFER_SIZE];
+
   if (signal(SIGUSR1, SigUsr1Handler) == SIG_ERR) {
-    cerr << "An error occurred while setting a signal handler." << endl;
+    cerr << "An error occurred while setting the USR1 signal handler." << endl;
+    return EXIT_FAILURE;
+  }
+
+  if (signal(SIGUSR2, SigUsr2Handler) == SIG_ERR) {
+    cerr << "An error occurred while setting the USR2 signal handler." << endl;
     return EXIT_FAILURE;
   }
 
@@ -179,28 +192,24 @@ int main(int argc, char ** argv) {
          1 << LCD_BUTTON | // 01000000 | GPIO 24 => P1-18 | <= (button)
          1 << LCD_RESET ;  // 08000000 | GPIO 27 => P1-13 | <= R̅E̅S̅E̅T̅
 
-  uint32_t pinout = gpio[13] & mask, previous = pinout;
-  uint64_t tick = 0;
-  next->tNow = tick++;
-  next->tPrevious = next->tNow;
-  next->sample = pinout;
+  uint32_t pinout = *gpio & mask, previous = pinout, sample;
+  next->tPrevious = next->tNow = tick++;
   next[1].tNow = next->tNow;
+  next->sample = pinout;
   next++;
   for (;;) {
     next->tPrevious = next->tNow;
-    next->tNow = tick++;
-    // if (tick % 1000 == 0) {
-    //   printf(".");fflush(stdout);
-    // }
+    next->tNow      = tick++;
 
-    next->sample = gpio[13] & mask;
-    if (next->sample != previous) {
-      // printf("+");fflush(stdout);
-
-      previous = next->sample;
-      Sample *prev = next;
-      if (++next == guard) next = buffer;
-      next->tNow = prev->tNow;
+    sample = *gpio & mask;
+    if (sample != previous) {
+      next->sample = previous = sample;
+      if (++next == guard) {
+        next = buffer;
+        next->tNow = guard[-1].tNow;
+      } else {
+        next->tNow = next[-1].tNow;
+      }
     }
   }
 }
