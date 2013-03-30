@@ -81,7 +81,10 @@
     }
   }
 
-  var address = window.location.protocol.replace(/^http/, 'ws') + '//' + window.location.host;
-  var ws = new WebSocket(address);
-  ws.onmessage = function (m) { handleMessage(m.data); };
+  if (window.location.protocol === 'http:' ||
+      window.location.protocol === 'https:') {
+    var address = window.location.protocol.replace(/^http/, 'ws') + '//' + window.location.host;
+    var ws = new WebSocket(address);
+    ws.onmessage = function (m) { handleMessage(m.data); };
+  }
 })(window);
