@@ -6,11 +6,12 @@
   var data = [[], [], [], [], []];
   var chart = new Array(5);
 
-  var LCD_CS     = 17;
-  var LCD_SCK    = 22;
-  var LCD_MOSI   = 23;
+  var LCD_CS     = 8;
+  var LCD_SCK    = 11;
+  var LCD_MOSI   = 10;
+  var LCD_RESET  = 25;
+
   var LCD_BUTTON = 24;
-  var LCD_RESET  = 27;
 
   function addSample(collection, time, pinout, bit) {
     collection.push([time, pinout & (1 << bit) ? 1 : 0]);

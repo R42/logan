@@ -45,11 +45,20 @@ unsigned int bufferPos = 0;
 #define PAGE_SIZE (4*1024)
 #define BLOCK_SIZE (4*1024)
 
-#define LCD_CS     17
-#define LCD_SCK    22
-#define LCD_MOSI   23
+// Wired back pins
+// #define LCD_CS     17
+// #define LCD_SCK    22
+// #define LCD_MOSI   23
+// #define LCD_RESET  27
+
+// Actual pins
+#define LCD_CS     8
+#define LCD_SCK    11
+#define LCD_MOSI   10
+#define LCD_RESET  25
+
+// Extra button, for testing only, not part of spi nor the lcd control lines
 #define LCD_BUTTON 24
-#define LCD_RESET  27
 
 // Set up a memory regions to access GPIO
 void SetupIO() {
