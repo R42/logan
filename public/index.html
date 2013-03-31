@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>LogAn</title>
+  <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
   <style>
 textarea {
   width: 100%;
@@ -52,21 +53,26 @@ textarea {
   </style>
 </head>
 <body>
-  <p id="lcd_mosi"></p>
-  <p id="lcd_cs"></p>
-  <p id="lcd_sck"></p>
-  <p id="lcd_reset"></p>
-  <p id="lcd_button"></p>
-  <form id="data" onsubmit="javascript:return false;">
-    Time base: <select id="timebase">
-      <option value="irregular">Irregular - One tick per sampler cycle</option>
-      <option value="none" selected>None - One tick per transition</option>
-    </select> <input type="checkbox" id="sloped" value="true">Sloped</checkbox><br/>
-    <textarea id="tsv" name="tsv"></textarea>
-    <button onclick="update();return false;">Update</button>
-  </form>
+  <div class="container">
+    <p id="lcd_mosi"></p>
+    <p id="lcd_cs"></p>
+    <p id="lcd_sck"></p>
+    <p id="lcd_reset"></p>
+    <p id="lcd_button"></p>
+    <form id="data" class="form-inline" onsubmit="javascript:return false;">
+      <div class="control-group">
+        Time base: <select id="timebase">
+          <option value="irregular">Irregular - One tick per sampler cycle</option>
+          <option value="none" selected>None - One tick per transition</option>
+        </select> <label class="checkbox"><input type="checkbox" id="sloped" value="true">Sloped</label><br/>
+      </div>
+      <textarea id="tsv" name="tsv" style="vertical-align:top;"></textarea>
+      <button class="btn btn-primary" onclick="update();return false;">Update</button>
+    </form>
+  </div>
   <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
   <script src="time-series-chart.js"></script>
+  <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
   <script src="logan.js"></script>
 </body>
 </html>
