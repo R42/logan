@@ -1,0 +1,33 @@
+{
+  "name": "wss",
+  "version": "0.0.1",
+  "description": "Raspberry Pi Simple Logical Analyzer",
+  "bin": {
+    "logan" : "./bin/logan"
+  },
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/luismreis/logan.git"
+  },
+  "keyword": [
+    "raspberry-pi",
+    "spi",
+    "gpio",
+    "debug",
+    "hardware"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "~0.4.25",
+    "node-static": "~0.6.7"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
+}

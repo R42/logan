@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd $(dirname $0)/..
+
+sh -c "sudo build/Release/sampler" 2>&1 | node lib/server.js
