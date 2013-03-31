@@ -58,8 +58,11 @@ textarea {
   <p id="lcd_reset"></p>
   <p id="lcd_button"></p>
   <form id="data" onsubmit="javascript:return false;">
-    <textarea id="tsv" name="tsv">
-    </textarea>
+    Time base: <select id="timebase">
+      <option value="irregular">Irregular - One tick per sampler cycle</option>
+      <option value="none" selected>None - One tick per transition</option>
+    </select> <input type="checkbox" id="sloped" value="true">Sloped</checkbox><br/>
+    <textarea id="tsv" name="tsv"></textarea>
     <button onclick="update();return false;">Update</button>
   </form>
   <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>

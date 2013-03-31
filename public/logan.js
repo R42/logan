@@ -12,46 +12,65 @@
   var LCD_BUTTON = 24;
   var LCD_RESET  = 27;
 
-  function parseTime(str) {
-    var ticks = parseInt(str, 10);
-    return ticks;
-  }
-
   function addSample(collection, time, pinout, bit) {
     collection.push([time, pinout & (1 << bit) ? 1 : 0]);
   }
 
+  function irregularTimeBase () {
+    return function irregularTick (time, previousSample, sample, callback) {
+        callback(time - 1, time, previousSample, sample);
+      };
+  }
+
+  function noTimeBase (sloped) {
+    var transitionCounter = 0;
+    return sloped ?
+      function slopedNoTick (time, previousSample, sample, callback) {
+        callback(transitionCounter++, transitionCounter++, previousSample, sample);
+      } :
+      function noTick (time, previousSample, sample, callback) {
+        callback(transitionCounter, transitionCounter++, previousSample, sample);
+      };
+  }
+
   var update = global.update = function () {
     var tsv = document.getElementById('tsv').value;
+
     data[0].length = 0;
     data[1].length = 0;
     data[2].length = 0;
     data[3].length = 0;
     data[4].length = 0;
+
+    var tickBase = document.getElementById('timebase').value === 'irregular' ?
+      irregularTimeBase() :
+      noTimeBase(document.getElementById('sloped').checked);
+
     var previousPinout;
-    tsv.split('\n').forEach(function (line, idx) {
+    tsv.split('\n').forEach(function (line) {
       var columns = line.split('\t');
       if (columns.length !== 2) { return; }
 
-      var currentTime  = parseTime(columns.shift());
-      var currentPinout  = parseInt(columns.shift(), 16);
-      if (idx === 0) {
+      var currentTick   = columns.shift();
+      var currentPinout = parseInt(columns.shift(), 16);
+      if (currentTick === 0) {
         previousPinout = currentPinout;
         return;
       }
 
-      var previousTime = currentTime - 1;
-
-      addSample(data[0], previousTime, previousPinout, LCD_MOSI  );
-      addSample(data[1], previousTime, previousPinout, LCD_CS    );
-      addSample(data[2], previousTime, previousPinout, LCD_SCK   );
-      addSample(data[3], previousTime, previousPinout, LCD_RESET );
-      addSample(data[4], previousTime, previousPinout, LCD_BUTTON);
-      addSample(data[0], currentTime, currentPinout, LCD_MOSI  );
-      addSample(data[1], currentTime, currentPinout, LCD_CS    );
-      addSample(data[2], currentTime, currentPinout, LCD_SCK   );
-      addSample(data[3], currentTime, currentPinout, LCD_RESET );
-      addSample(data[4], currentTime, currentPinout, LCD_BUTTON);
+      tickBase(currentTick, previousPinout, currentPinout,
+        function (previousTick, tick, previousPinout, currentPinout) {
+          addSample(data[0], previousTick, previousPinout, LCD_MOSI  );
+          addSample(data[1], previousTick, previousPinout, LCD_CS    );
+          addSample(data[2], previousTick, previousPinout, LCD_SCK   );
+          addSample(data[3], previousTick, previousPinout, LCD_RESET );
+          addSample(data[4], previousTick, previousPinout, LCD_BUTTON);
+          addSample(data[0], tick, currentPinout, LCD_MOSI  );
+          addSample(data[1], tick, currentPinout, LCD_CS    );
+          addSample(data[2], tick, currentPinout, LCD_SCK   );
+          addSample(data[3], tick, currentPinout, LCD_RESET );
+          addSample(data[4], tick, currentPinout, LCD_BUTTON);
+        });
 
       previousPinout = currentPinout;
     });
