@@ -2,4 +2,20 @@
 
 cd $(dirname $0)/..
 
-sh -c "sudo build/Release/sampler" 2>&1 | node lib/server.js
+if [ $# -eq 0 ]; then
+  cat <<EOF
+Usage: logan <gpio pin> <gpio pin> ...
+
+Eg: For GPIO(17, 22, 23, 24, 27)
+  logan 17 22 23 24 27
+
+Eg: For SPI(CE0, MOSI, SCLK) + GPIO(24, 25)
+  logan 8 10 11 24 25
+EOF
+  exit
+fi
+
+#CMD="sudo -- build/Release/sampler $@"
+echo "Sampler currently hardcoded to 17 22 23 24 27"
+
+sh -c "sudo build/Release/sampler 17 22 23 24 27" 2>&1 | node lib/server.js "$@"

@@ -135,16 +135,14 @@ int main(int argc, char ** argv) {
     return EXIT_FAILURE;
   }
 
-  fprintf(stderr, "# Ready to go.\n");
-
-  // TODO get this mask from an argument
   // TODO map P1 pin number to GPIO pin
   // TODO support Rev. 1 P1 pin numbers
-  mask = 1 << LCD_CS     | // 00020000 | GPIO 17 => P1-11 | <= C̅S̅
-         1 << LCD_SCK    | // 00400000 | GPIO 22 => P1-15 | <= SCK
-         1 << LCD_MOSI   | // 00800000 | GPIO 23 => P1-16 | <= MOSI
-         1 << LCD_BUTTON | // 01000000 | GPIO 24 => P1-18 | <= (button)
-         1 << LCD_RESET ;  // 08000000 | GPIO 27 => P1-13 | <= R̅E̅S̅E̅T̅
+  mask = 0;
+  for (int i = 1; i < argc; i++) {
+    mask |= 1 << atoi(argv[i]);
+  }
+
+  fprintf(stderr, "# Ready to go, (mask=0x%08x).\n", mask);
 
   uint32_t pinout   = *gpio & mask;
   uint32_t previous = pinout;

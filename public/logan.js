@@ -3,15 +3,33 @@
 (function (global) {
   'use strict';
 
-  var data = [[], [], [], [], []];
-  var chart = new Array(5);
+  var config = {
+    lines : [
+      { label: 'MOSI'  , bit: 23, theme: 'orange' }, // 10,
+      { label: 'C̅S̅'    , bit: 17, theme: 'green'  }, //  8,
+      { label: 'SCK'   , bit: 22, theme: 'blue'   }, // 11,
+      { label: 'R̅E̅S̅E̅T̅' , bit: 27, theme: 'red'    }, // 25,
+      { label: 'BUTTON', bit: 24, theme: 'gray'   }
+    ]
+  };
 
-  var LCD_CS     = 8;
-  var LCD_SCK    = 11;
-  var LCD_MOSI   = 10;
-  var LCD_RESET  = 25;
+  var data, chart;
 
-  var LCD_BUTTON = 24;
+  function setup() {
+    data = config.lines.map(function () { return []; });
+    chart = new Array(data.length);
+
+    var lines = document.getElementById('lines');
+    lines.innerHTML = '';
+    config.lines.forEach(function (line, i) {
+      var p = document.createElement('p');
+      p.id = 'line_' + i;
+      p.className = line.theme;
+      lines.appendChild(p);
+    });
+  }
+
+  setup();
 
   function addSample(collection, time, pinout, bit) {
     collection.push([time, pinout & (1 << bit) ? 1 : 0]);
@@ -37,11 +55,7 @@
   var update = global.update = function () {
     var tsv = document.getElementById('tsv').value;
 
-    data[0].length = 0;
-    data[1].length = 0;
-    data[2].length = 0;
-    data[3].length = 0;
-    data[4].length = 0;
+    data.forEach(function (series) { series.length = 0; });
 
     var tickBase = document.getElementById('timebase').value === 'irregular' ?
       irregularTimeBase() :
@@ -61,23 +75,17 @@
 
       tickBase(currentTick, previousPinout, currentPinout,
         function (previousTick, tick, previousPinout, currentPinout) {
-          addSample(data[0], previousTick, previousPinout, LCD_MOSI  );
-          addSample(data[1], previousTick, previousPinout, LCD_CS    );
-          addSample(data[2], previousTick, previousPinout, LCD_SCK   );
-          addSample(data[3], previousTick, previousPinout, LCD_RESET );
-          addSample(data[4], previousTick, previousPinout, LCD_BUTTON);
-          addSample(data[0], tick, currentPinout, LCD_MOSI  );
-          addSample(data[1], tick, currentPinout, LCD_CS    );
-          addSample(data[2], tick, currentPinout, LCD_SCK   );
-          addSample(data[3], tick, currentPinout, LCD_RESET );
-          addSample(data[4], tick, currentPinout, LCD_BUTTON);
+          config.lines.forEach(function (line, i) {
+            addSample(data[i], previousTick, previousPinout, line.bit);
+            addSample(data[i], tick        , previousPinout, line.bit);
+          });
         });
 
       previousPinout = currentPinout;
     });
 
-    ['mosi', 'cs', 'sck', 'reset', 'button'].forEach(function(c, i) {
-      d3.select('#lcd_' + c)
+    config.lines.forEach(function(c, i) {
+      d3.select('#line_' + i)
           .datum(data[i])
         .call(chart[i] = timeSeriesChart()
           .x(function(d) { return d[0]; })

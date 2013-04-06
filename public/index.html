@@ -30,20 +30,17 @@ textarea {
   padding: 4px;
 }
 
-#lcd_mosi .line { stroke: #ff8000; }
-#lcd_mosi .area { fill  : #ffc080; }
+.orange .line { stroke: #ff8000; }
+.green  .line { stroke: #008000; }
+.blue   .line { stroke: #000080; }
+.red    .line { stroke: #ff0000; }
+.gray   .line { stroke: #808080; }
 
-#lcd_cs .line { stroke: #008000; }
-#lcd_cs .area { fill  : #c0e0c0; }
-
-#lcd_sck .line { stroke: #000080; }
-#lcd_sck .area { fill  : #8080ff; }
-
-#lcd_reset .line { stroke: #ff0000; }
-#lcd_reset .area { fill  : #ff8080; }
-
-#lcd_button .line { stroke: #808080; }
-#lcd_button .area { fill  : #c0c0c0; }
+.orange .area { fill: #ffc080; }
+.green  .area { fill: #c0e0c0; }
+.blue   .area { fill: #8080ff; }
+.red    .area { fill: #ff8080; }
+.gray   .area { fill: #c0c0c0; }
 
 textarea {
   width: 80%;
@@ -54,11 +51,8 @@ textarea {
 </head>
 <body>
   <div class="container">
-    <p id="lcd_mosi"></p>
-    <p id="lcd_cs"></p>
-    <p id="lcd_sck"></p>
-    <p id="lcd_reset"></p>
-    <p id="lcd_button"></p>
+    <div id="lines">
+    </div>
     <form id="data" class="form-inline" onsubmit="javascript:return false;">
       <div class="control-group">
         Time base: <select id="timebase">
@@ -69,9 +63,12 @@ textarea {
       <textarea id="tsv" name="tsv" style="vertical-align:top;"></textarea>
       <button class="btn btn-primary" onclick="update();return false;">Update</button>
     </form>
+    <hr>
+    <div id="mask"></div>
   </div>
-  <script src="http://d3js.org/d3.v2.min.js?2.8.1"></script>
+  <script src="//d3js.org/d3.v2.min.js?2.8.1"></script>
   <script src="time-series-chart.js"></script>
+  <script src="//code.jquery.com/jquery-1.9.1.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
   <script src="logan.js"></script>
 </body>

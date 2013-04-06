@@ -25,7 +25,8 @@
   "license": "MIT",
   "dependencies": {
     "ws": "~0.4.25",
-    "node-static": "~0.6.7"
+    "node-static": "~0.6.7",
+    "optimist": "~0.3.7"
   },
   "engines": {
     "node": ">=0.8"
