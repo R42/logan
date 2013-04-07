@@ -47,11 +47,18 @@ textarea {
   height: 80px;
 }
 
+.data .error {
+  color: #800000;
+}
+
   </style>
 </head>
 <body>
   <div class="container">
     <div id="lines">
+    </div>
+    <div id="config">
+      <a id="download" href="">Download config.json</a>
     </div>
     <form id="data" class="form-inline" onsubmit="javascript:return false;">
       <div class="control-group">
@@ -62,9 +69,14 @@ textarea {
       </div>
       <textarea id="tsv" name="tsv" style="vertical-align:top;"></textarea>
       <button class="btn btn-primary" onclick="update();return false;">Update</button>
+      <br>
     </form>
     <hr>
-    <div id="mask"></div>
+    <div id="spi">
+      <h6>SPI Data</h6>
+      <button class="btn btn-info btn-small" onclick="spiDecode();return false;">SPI decode</button>
+      <pre class="data"></pre>
+    </div>
   </div>
   <script src="//d3js.org/d3.v2.min.js?2.8.1"></script>
   <script src="time-series-chart.js"></script>
